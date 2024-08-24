@@ -3,7 +3,7 @@ const express = require('express')
 const app = express()
 app.use(express.json())
 
-const persons = [
+let persons = [
   {
     id: 1,
     name: 'Arto Hellas',
@@ -50,13 +50,31 @@ app.delete('/api/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
   const person = request.body
 
+  if (!person) {
+    return response.status(400).json({ error: 'there is no data in the request' })
+  }
+
+  if (!person.name) {
+    return response.status(400).json({ error: 'name is missing' })
+  }
+
+  if (!person.number) {
+    return response.status(400).json({ error: 'number is missing' })
+  }
+
+  const hasPerson = persons.find(storedPerson => storedPerson.name === person.name)
+
+  if (hasPerson) {
+    return response.status(400).json({ error: 'name must be unique' })
+  }
+
   const ids = persons.map(person => person.id)
   const maxId = Math.max(...ids)
 
   const newPerson = {
     id: maxId + 1,
     name: person.name,
-    number: person.number
+    number: person.number,
   }
 
   persons = [...persons, newPerson]
